@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import styled, { injectGlobal } from "styled-components";
+import styled from "styled-components";
 import './App.css';
 import '@amyscript/dsg-info-card/dsg-info-card.js';
 import '@amyscript/dsg-image/dsg-image.js';
 import '@amyscript/dsg-input/dsg-input.js';
-import '@amyscript/dsg-input-button/dsg-input-button.js';
+import DsgInputComponent from './components/DsgInputButton';
 
 import { getWeatherData } from "./getWeatherData";
 
@@ -45,6 +45,9 @@ class App extends Component {
   };
 
   handleCityUpdate = (city) => {
+    this.setState({
+      city,
+    })
     let weatherData = "";
     if (city !== "" || city !== undefined) {
       getWeatherData(city).then(res => {
@@ -59,21 +62,25 @@ class App extends Component {
     const shadow = inputCustomElement.shadowRoot;
     shadow.getElementById('city-input').value = '';
   };
-
+  callback = () => {
+    console.log('callback');
+  }
   render() {
     return (
       <Wrapper>
         <div className="App">
-          <dsg-input id="city-custom-input-element" inputId="city-input" />
-          <dsg-input-button buttonId="city-input-button" />
+          <InputSection>
+            <dsg-input id="city-custom-input-element" inputId="city-input" />
+            <DsgInputComponent buttonFunction={this.callback} buttonId="city-input-button" />
+          </InputSection>
           {this.state.currentConditions ? (
           <WeatherWrapper>
-            <dsg-image
-              url={this.state.currentConditions.weatherIconUrl[0].value}
-            >
-            </dsg-image>
-            <dsg-info-card
-              imageUrl={this.state.currentConditions.weatherIconUrl[0].value}
+            <dsg-info-card 
+              cardTitle={this.state.city}
+              cardwidth="300px" 
+              heading={this.state.currentConditions.temp_C + '℃'} 
+              imageurl={this.state.currentConditions.weatherIconUrl[0].value} 
+              text={this.state.currentConditions.weatherDesc[0].value}
             >
             </dsg-info-card>
           </WeatherWrapper>
@@ -85,13 +92,22 @@ class App extends Component {
   }
 }
 
+const InputSection = styled.div`
+  display: flex;
+  align-items: center;
+  dsg-input {
+    padding-right: 10px;
+  }
+`;
+
 const Wrapper = styled.div`
   font-family: Arial, Helvetica, sans-serif;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   background: rgba(0, 0, 0, 0.05);
+  height: 100vh;
+  padding-top: 40px;
 `;
 
 const WeatherWrapper = styled.div`
