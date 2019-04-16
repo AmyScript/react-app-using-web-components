@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import styled from "styled-components";
-import './App.css';
-import '@amyscript/dsg-info-card/dsg-info-card.js';
-import '@amyscript/dsg-image/dsg-image.js';
-import '@amyscript/dsg-input/dsg-input.js';
-import DsgInputComponent from './components/DsgInputButton';
+import "./App.css";
+import "@amyscript/custom-info-card";
+import "@amyscript/custom-input";
+import CustomInputButtonComponent from "./components/CustomInputButton";
 
 import { getWeatherData } from "./getWeatherData";
 
@@ -19,13 +18,15 @@ class App extends Component {
   };
 
   componentDidMount() {
-    document.addEventListener('buttonClicked', async(e) => {
-      if(e.detail.button === 'city-input-button') {
-        const inputCustomElement = document.getElementById('city-custom-input-element');
-        //need to access the shadowRoot to get to the Shadow DOM
-        const shadow = inputCustomElement.shadowRoot;
-        const city = shadow.getElementById('city-input').value;
-        await this.handleCityUpdate(city);
+    document.addEventListener("buttonClicked", async e => {
+      if (e.detail.button === "city-input-button") {
+        const inputCustomElement = document.getElementById(
+          "city-custom-input-element"
+        );
+        this.setState({
+          city: inputCustomElement.getAttribute("cityprop")
+        });
+        await this.handleCityUpdate(this.state.city);
       }
     });
   }
@@ -35,7 +36,6 @@ class App extends Component {
     const currentConditions = weatherData.current_condition[0];
     const currentDate = weatherData.weather[0].date;
     const queryLocation = weatherData.request[0].query;
-
     this.setState({
       hourlyConditions,
       currentConditions,
@@ -44,10 +44,7 @@ class App extends Component {
     });
   };
 
-  handleCityUpdate = (city) => {
-    this.setState({
-      city,
-    })
+  handleCityUpdate = city => {
     let weatherData = "";
     if (city !== "" || city !== undefined) {
       getWeatherData(city).then(res => {
@@ -57,35 +54,38 @@ class App extends Component {
         }
       });
     }
-    const inputCustomElement = document.getElementById('city-custom-input-element');
-    //need to access the shadowRoot to get to the Shadow DOM
-    const shadow = inputCustomElement.shadowRoot;
-    shadow.getElementById('city-input').value = '';
+    const inputCustomElement = document.getElementById(
+      "city-custom-input-element"
+    );
+    inputCustomElement.setAttribute("cityprop", "");
   };
+
   callback = () => {
-    console.log('callback');
-  }
+    console.log("callback");
+  };
+
   render() {
     return (
       <Wrapper>
         <div className="App">
           <InputSection>
-            <dsg-input id="city-custom-input-element" inputId="city-input" />
-            <DsgInputComponent buttonFunction={this.callback} buttonId="city-input-button" />
+            <custom-input id="city-custom-input-element" inputId="city-input" />
+            <CustomInputButtonComponent
+              buttonFunction={this.callback}
+              buttonId="city-input-button"
+            />
           </InputSection>
           {this.state.currentConditions ? (
-          <WeatherWrapper>
-            <dsg-info-card 
-              cardTitle={this.state.city}
-              cardwidth="300px" 
-              heading={this.state.currentConditions.temp_C + '℃'} 
-              imageurl={this.state.currentConditions.weatherIconUrl[0].value} 
-              text={this.state.currentConditions.weatherDesc[0].value}
-            >
-            </dsg-info-card>
-          </WeatherWrapper>
+            <WeatherWrapper>
+              <custom-info-card
+                cardTitle={this.state.city}
+                cardwidth="300px"
+                heading={this.state.currentConditions.temp_C + "℃"}
+                imageurl={this.state.currentConditions.weatherIconUrl[0].value}
+                text={this.state.currentConditions.weatherDesc[0].value}
+              />
+            </WeatherWrapper>
           ) : null}
-
         </div>
       </Wrapper>
     );
@@ -95,7 +95,9 @@ class App extends Component {
 const InputSection = styled.div`
   display: flex;
   align-items: center;
-  dsg-input {
+  justify-content: space-between;
+  width: 300px;
+  custom-input {
     padding-right: 10px;
   }
 `;
